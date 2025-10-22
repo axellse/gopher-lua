@@ -3,7 +3,6 @@ package lua
 import (
 	"context"
 	"fmt"
-	"os"
 )
 
 type LValueType int

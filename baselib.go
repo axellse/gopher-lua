@@ -3,7 +3,6 @@ package lua
 import (
 	"fmt"
 	"io"
-	"os"
 	"runtime"
 	"strconv"
 	"strings"
@@ -26,12 +25,10 @@ func OpenBase(L *LState) int {
 var baseFuncs = map[string]LGFunction{
 	"assert":         baseAssert,
 	"collectgarbage": baseCollectGarbage,
-	"dofile":         baseDoFile,
 	"error":          baseError,
 	"getfenv":        baseGetFEnv,
 	"getmetatable":   baseGetMetatable,
 	"load":           baseLoad,
-	"loadfile":       baseLoadFile,
 	"loadstring":     baseLoadString,
 	"next":           baseNext,
 	"pcall":          basePCall,
@@ -66,19 +63,6 @@ func baseAssert(L *LState) int {
 func baseCollectGarbage(L *LState) int {
 	runtime.GC()
 	return 0
-}
-
-func baseDoFile(L *LState) int {
-	src := L.ToString(1)
-	top := L.GetTop()
-	fn, err := L.LoadFile(src)
-	if err != nil {
-		L.Push(LString(err.Error()))
-		L.Panic(L)
-	}
-	L.Push(fn)
-	L.Call(0, MultRet)
-	return L.GetTop() - top
 }
 
 func baseError(L *LState) int {
@@ -193,26 +177,6 @@ func baseLoad(L *LState) int {
 		}
 	}
 	return loadaux(L, strings.NewReader(strings.Join(buf, "")), chunkname)
-}
-
-func baseLoadFile(L *LState) int {
-	var reader io.Reader
-	var chunkname string
-	var err error
-	if L.GetTop() < 1 {
-		reader = os.Stdin
-		chunkname = "<stdin>"
-	} else {
-		chunkname = L.CheckString(1)
-		reader, err = os.Open(chunkname)
-		if err != nil {
-			L.Push(LNil)
-			L.Push(LString(fmt.Sprintf("can not open file: %v", chunkname)))
-			return 2
-		}
-		defer reader.(*os.File).Close()
-	}
-	return loadaux(L, reader, chunkname)
 }
 
 func baseLoadString(L *LState) int {

@@ -1,7 +1,6 @@
 package lua
 
 import (
-	"os"
 	"strings"
 	"time"
 )
@@ -55,16 +54,9 @@ func OpenOs(L *LState) int {
 var osFuncs = map[string]LGFunction{
 	"clock":     osClock,
 	"difftime":  osDiffTime,
-	"execute":   osExecute,
-	"exit":      osExit,
 	"date":      osDate,
-	"getenv":    osGetEnv,
-	"remove":    osRemove,
-	"rename":    osRename,
-	"setenv":    osSetEnv,
 	"setlocale": osSetLocale,
 	"time":      osTime,
-	"tmpname":   osTmpname,
 }
 
 func osClock(L *LState) int {
@@ -74,32 +66,6 @@ func osClock(L *LState) int {
 
 func osDiffTime(L *LState) int {
 	L.Push(LNumber(L.CheckInt64(1) - L.CheckInt64(2)))
-	return 1
-}
-
-func osExecute(L *LState) int {
-	var procAttr os.ProcAttr
-	procAttr.Files = []*os.File{os.Stdin, os.Stdout, os.Stderr}
-	cmd, args := popenArgs(L.CheckString(1))
-	args = append([]string{cmd}, args...)
-	process, err := os.StartProcess(cmd, args, &procAttr)
-	if err != nil {
-		L.Push(LNumber(1))
-		return 1
-	}
-
-	ps, err := process.Wait()
-	if err != nil || !ps.Success() {
-		L.Push(LNumber(1))
-		return 1
-	}
-	L.Push(LNumber(0))
-	return 1
-}
-
-func osExit(L *LState) int {
-	L.Close()
-	os.Exit(L.OptInt(1, 0))
 	return 1
 }
 
@@ -139,56 +105,10 @@ func osDate(L *LState) int {
 	return 1
 }
 
-func osGetEnv(L *LState) int {
-	v := os.Getenv(L.CheckString(1))
-	if len(v) == 0 {
-		L.Push(LNil)
-	} else {
-		L.Push(LString(v))
-	}
-	return 1
-}
-
-func osRemove(L *LState) int {
-	err := os.Remove(L.CheckString(1))
-	if err != nil {
-		L.Push(LNil)
-		L.Push(LString(err.Error()))
-		return 2
-	} else {
-		L.Push(LTrue)
-		return 1
-	}
-}
-
-func osRename(L *LState) int {
-	err := os.Rename(L.CheckString(1), L.CheckString(2))
-	if err != nil {
-		L.Push(LNil)
-		L.Push(LString(err.Error()))
-		return 2
-	} else {
-		L.Push(LTrue)
-		return 1
-	}
-}
-
 func osSetLocale(L *LState) int {
 	// setlocale is not supported
 	L.Push(LFalse)
 	return 1
-}
-
-func osSetEnv(L *LState) int {
-	err := os.Setenv(L.CheckString(1), L.CheckString(2))
-	if err != nil {
-		L.Push(LNil)
-		L.Push(LString(err.Error()))
-		return 2
-	} else {
-		L.Push(LTrue)
-		return 1
-	}
 }
 
 func osTime(L *LState) int {
@@ -218,17 +138,6 @@ func osTime(L *LState) int {
 			L.Push(LNumber(t.Unix()))
 		}
 	}
-	return 1
-}
-
-func osTmpname(L *LState) int {
-	file, err := os.CreateTemp("", "")
-	if err != nil {
-		L.RaiseError("unable to generate a unique filename")
-	}
-	file.Close()
-	os.Remove(file.Name()) // ignore errors
-	L.Push(LString(file.Name()))
 	return 1
 }
 

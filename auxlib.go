@@ -1,10 +1,7 @@
 package lua
 
 import (
-	"bufio"
 	"fmt"
-	"io"
-	"os"
 	"strings"
 )
 
@@ -349,7 +346,7 @@ func (ls *LState) CallMeta(obj LValue, event string) LValue {
 
 /* load and function call operations {{{ */
 
-func (ls *LState) LoadFile(path string) (*LFunction, error) {
+/*func (ls *LState) LoadFile(path string) (*LFunction, error) {
 	var file *os.File
 	var err error
 	if len(path) == 0 {
@@ -387,20 +384,20 @@ func (ls *LState) LoadFile(path string) (*LFunction, error) {
 	}
 
 	return ls.Load(reader, path)
-}
+}*/
 
 func (ls *LState) LoadString(source string) (*LFunction, error) {
 	return ls.Load(strings.NewReader(source), "<string>")
 }
 
-func (ls *LState) DoFile(path string) error {
+/*func (ls *LState) DoFile(path string) error {
 	if fn, err := ls.LoadFile(path); err != nil {
 		return err
 	} else {
 		ls.Push(fn)
 		return ls.PCall(0, MultRet, nil)
 	}
-}
+}*/
 
 func (ls *LState) DoString(source string) error {
 	if fn, err := ls.LoadString(source); err != nil {

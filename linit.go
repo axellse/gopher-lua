@@ -3,12 +3,8 @@ package lua
 const (
 	// BaseLibName is here for consistency; the base functions have no namespace/library.
 	BaseLibName = ""
-	// LoadLibName is here for consistency; the loading system has no namespace/library.
-	LoadLibName = "package"
 	// TabLibName is the name of the table Library.
 	TabLibName = "table"
-	// IoLibName is the name of the io Library.
-	IoLibName = "io"
 	// OsLibName is the name of the os Library.
 	OsLibName = "os"
 	// StringLibName is the name of the string Library.
@@ -29,10 +25,8 @@ type luaLib struct {
 }
 
 var luaLibs = []luaLib{
-	luaLib{LoadLibName, OpenPackage},
 	luaLib{BaseLibName, OpenBase},
 	luaLib{TabLibName, OpenTable},
-	luaLib{IoLibName, OpenIo},
 	luaLib{OsLibName, OpenOs},
 	luaLib{StringLibName, OpenString},
 	luaLib{MathLibName, OpenMath},

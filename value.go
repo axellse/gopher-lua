@@ -171,7 +171,6 @@ type Global struct {
 	Global        *LTable
 
 	builtinMts map[int]LValue
-	tempFiles  []*os.File
 	gccount    int32
 }
 

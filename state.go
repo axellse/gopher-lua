@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"io"
 	"math"
-	"os"
 	"runtime"
 	"strings"
 	"sync"
@@ -642,7 +641,6 @@ func newGlobal() *Global {
 		Registry:   newLTable(0, 32),
 		Global:     newLTable(0, 64),
 		builtinMts: make(map[int]LValue),
-		tempFiles:  make([]*os.File, 0, 10),
 	}
 }
 
@@ -1440,11 +1438,6 @@ func (ls *LState) IsClosed() bool {
 
 func (ls *LState) Close() {
 	atomic.AddInt32(&ls.stop, 1)
-	for _, file := range ls.G.tempFiles {
-		// ignore errors in these operations
-		file.Close()
-		os.Remove(file.Name())
-	}
 	ls.stack.FreeAll()
 	ls.stack = nil
 }
@@ -2249,8 +2242,7 @@ func (ls *LState) SetMx(mx int) {
 		for atomic.LoadInt32(&ls.stop) == 0 {
 			runtime.ReadMemStats(&s)
 			if s.Alloc >= limit {
-				fmt.Println("out of memory")
-				os.Exit(3)
+				panic("out of memory")
 			}
 			time.Sleep(100 * time.Millisecond)
 		}
